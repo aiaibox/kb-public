@@ -19,6 +19,7 @@ thesis
 position
 glossary
 note
+topic
 
 # Status
 import

@@ -39,6 +39,7 @@ REQUIRED_FIELDS = ("id", "title", "repo", "tags", "created", "updated")
 # ignored. Absent file means the check is skipped, so a repo can opt out.
 TAGS_FILE = REPO_ROOT / "tags.txt"
 MAX_TAGS = 5
+MIN_TOPIC_LINKS = 3      # advisory: see the 'topic' rule in main()
 
 # GitHub hard-blocks a single file over 100MB and warns at 50MB; its recommended
 # whole-repo size is 1GB. A note vault should never come close, so anything this
@@ -94,17 +95,24 @@ INTERNAL_HOST_RE = re.compile(r"\b[a-z0-9][a-z0-9\-]*\.(?:internal|local|lan)\b"
 
 
 class Problem:
-    __slots__ = ("path", "line", "message")
+    """A lint finding. Warnings are advisory: they print but never fail the run,
+    so a pre-commit hook still lets the commit through. Use one where the rule
+    expresses a habit worth keeping rather than an invariant worth enforcing."""
 
-    def __init__(self, path: Path, line: int, message: str) -> None:
+    __slots__ = ("path", "line", "message", "warning")
+
+    def __init__(self, path: Path, line: int, message: str,
+                 warning: bool = False) -> None:
         self.path = path
         self.line = line
         self.message = message
+        self.warning = warning
 
     def render(self) -> str:
         rel = self.path.relative_to(REPO_ROOT)
         where = f"{rel}:{self.line}" if self.line else str(rel)
-        return f"{where}: {self.message}"
+        prefix = "warning: " if self.warning else ""
+        return f"{where}: {prefix}{self.message}"
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, str], int, str | None]:
@@ -344,6 +352,22 @@ def main() -> int:
                         path, 1,
                         "note tagged 'position' does not link a note tagged 'thesis'"))
 
+            # A note tagged 'topic' synthesises other notes, so it must actually
+            # reach them. Advisory, not enforced: a topic note is often written
+            # before the notes it will gather, and blocking that commit would
+            # just push people to skip the tag. Three is the point at which a
+            # note is doing synthesis rather than cross-referencing.
+            if "topic" in parse_tags(fields.get("tags", "")):
+                linked = {m.group(1).strip()
+                          for _, line in body_lines_outside_code(text, offset)
+                          for m in WIKILINK_RE.finditer(strip_inline_code(line))}
+                if len(linked) < MIN_TOPIC_LINKS:
+                    problems.append(Problem(
+                        path, 1,
+                        f"note tagged 'topic' links {len(linked)} note(s); "
+                        f"a topic note should gather at least {MIN_TOPIC_LINKS}",
+                        warning=True))
+
         # Secret scan runs on every markdown file, docs included.
         for lineno, line in enumerate(text.splitlines(), start=1):
             if ALLOW_MARKER in line:
@@ -360,13 +384,17 @@ def main() -> int:
     for problem in sorted(problems, key=lambda p: (str(p.path), p.line)):
         print(problem.render(), file=sys.stderr)
 
-    if problems:
-        print(f"\n{REPO_NAME}: {len(problems)} problem(s) in {len(notes)} file(s)",
-              file=sys.stderr)
+    errors = [p for p in problems if not p.warning]
+    warnings = [p for p in problems if p.warning]
+    warn_note = f", {len(warnings)} warning(s)" if warnings else ""
+
+    if errors:
+        print(f"\n{REPO_NAME}: {len(errors)} problem(s){warn_note} "
+              f"in {len(notes)} file(s)", file=sys.stderr)
         return 1
     if not args.quiet:
         vocab_note = "" if vocabulary is None else f", {len(vocabulary)} tags allowed"
-        print(f"{REPO_NAME}: clean ({checked} note(s) checked{vocab_note})")
+        print(f"{REPO_NAME}: clean ({checked} note(s) checked{vocab_note}{warn_note})")
     return 0
 
 
