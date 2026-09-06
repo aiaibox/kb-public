@@ -149,7 +149,7 @@ so nothing may land here unreviewed.
 `work/` (the craft plus OKRs) · `decisions/` · `people/` ·
 `log/{meetings,2026}` · `inbox/`.
 
-**private (6)** — `finance/{accounts,tax,compensation}` ·
+**private (6)** — `finance/{accounts,tax}` ·
 `identity/{documents,credentials}` · `health/` · `legal/` ·
 `lifestyle/{log,notes}` · `inbox/`. Filenames are **numeric**: git-crypt hides
 content, not names.
@@ -165,8 +165,8 @@ page.
 
 | Tier | Keep | Applies to |
 |---|---|---|
-| **Decision** | Everything needed to re-evaluate later: the context that forced it, options considered and rejected *with reasons*, the decision, its consequences, and what would reverse it | `decisions/`, `finance/invest/thesis/`, `finance/invest/journal/`, `infra/incidents/` |
-| **Reference** | The conclusion, the numbers, and where they came from. Drop the derivation | `reference/`, `glossary/`, `infra/hosts/`, benchmarks |
+| **Decision** | Everything needed to re-evaluate later: the context that forced it, options considered and rejected *with reasons*, the decision, its consequences, and what would reverse it | `decisions/`, `finance/invest/`, `business/systems/incidents/`, and anything tagged `decision`, `thesis` or `position` |
+| **Reference** | The conclusion, the numbers, and where they came from. Drop the derivation | `notes/glossary/`, `tech/infra/`, `howto/`, and anything tagged `reference` or `benchmark` |
 | **Volatile** | The figure, the date it was observed, and where to reverify. Nothing else | prices, fees, policies, availability, admissions rules |
 | **Discard** | Nothing. Do not create a note | one-off lookups, filler, near-duplicates of an existing note |
 
@@ -306,7 +306,7 @@ preference — and it is generous: the largest note in this vault is 389 lines
 > note, which is the better design anyway. Treat 600 as a property of the current
 > indexing approach, not of the vault.
 
-Append-only logs (`daily/`, `finance/invest/journal/`) grow without limit by design.
+Append-only logs (`log/`, `tech/kb/kb-history.md`) grow without limit by design.
 They need no exemption from the rule above: a continuous dated record *is* one
 question.
 
@@ -336,6 +336,26 @@ Consequences:
   tag is a deliberate edit to that file, not something done in passing.
 - 1–5 tags. A note needing more than five has not been split.
 - English only, like every other artifact in this vault.
+- **Adding a tag to a note already at five means dropping one deliberately.**
+  Never truncate — a script that appends then trims silently discards the tag it
+  was asked to add.
+
+### Two tags carry the weight of a whole tier
+
+Atomic notes each record a decision *at a time*. Nothing inside them says which
+decision is now true, and that gap is closed by two tags rather than by a folder:
+
+- **`superseded`** — this note is no longer current. Use it when one decision
+  genuinely replaces another. Drop `volatile` at the same time: a dead note does
+  not belong in the re-verify pool.
+- **`topic`** — this note synthesises others into the current picture: a map, an
+  aggregate across sleeves, a "what am I actually doing now". It lives in its own
+  domain folder like any other note, so the tier adds no folder and no third
+  level. Lint **warns** (never blocks) if it links fewer than three notes, since
+  a topic note is often written before the notes it will gather.
+
+Reach for `superseded` when one note replaces another, and `topic` when no single
+note can hold the answer.
 
 ## 6. Links
 
@@ -349,8 +369,12 @@ Inline code is exempt, so documentation can write `[[slug]]` as an example.
 
 ## 7. Append, supersede, retain
 
-- **Append-only:** `daily/`, `finance/invest/journal/`. Never retroactively edit.
-- **Frozen after sign-off:** `infra/incidents/`. Correct the record in a new note.
+- **Append-only:** `log/`, `tech/kb/kb-history.md`, and any investment journal
+  entry. Never retroactively edit. Git enforces nothing here; `merge=union` in
+  `.gitattributes` only stops a merge from silently dropping lines, and that
+  rule is inert unless its path matches the live layout.
+- **Frozen after sign-off:** `business/systems/incidents/`. Correct the record
+  in a new note.
 - **Supersede, do not delete:** mark stale content `> superseded by [[slug]]` and
   leave it. The history of a wrong belief is often the useful part.
 - **`inbox/` is the only unstructured folder.** Triage weekly. An item older than

@@ -5,6 +5,7 @@
 *      text=auto
 
 # Never let a merge driver mangle an append-only log silently.
-daily/**            merge=union
-finance/invest/journal/** merge=union
-infra/kb-history.md merge=union
+# Paths must match the live layout: a merge=union rule against a folder that no
+# longer exists is silently inert, which is how the history log lost its rule.
+log/**                  merge=union
+tech/kb/kb-history.md   merge=union
