@@ -26,7 +26,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 REPO_NAME = REPO_ROOT.name
 
 # Directories that hold no notes and are never checked as notes.
-SKIP_DIRS = {".git", ".githooks", "_templates", "scripts", "node_modules"}
+# Machinery, not notes. `setup/` holds launchd plists, shell config and the
+# operational docs symlinked to the vault root — none of which carry
+# frontmatter, and all of which would otherwise be linted as notes.
+SKIP_DIRS = {".git", ".githooks", "_templates", "scripts", "setup",
+             "node_modules"}
 
 # Files that live in a repo but are documentation, not notes: no frontmatter
 # is expected and none is required.
