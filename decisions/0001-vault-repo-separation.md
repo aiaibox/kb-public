@@ -2,7 +2,7 @@
 id: 01M1SQQC339FMTVPF9MZTNXAQN
 title: "Separating a knowledge base by sensitivity"
 repo: public
-tags: [privacy, git]
+tags: [security, infra]
 created: 2026-09-05
 updated: 2026-09-05
 ---

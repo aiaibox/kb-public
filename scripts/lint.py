@@ -40,6 +40,14 @@ REQUIRED_FIELDS = ("id", "title", "repo", "tags", "created", "updated")
 TAGS_FILE = REPO_ROOT / "tags.txt"
 MAX_TAGS = 5
 
+# GitHub hard-blocks a single file over 100MB and warns at 50MB; its recommended
+# whole-repo size is 1GB. A note vault should never come close, so anything this
+# large is almost certainly an attachment committed by accident — and once it is
+# in history the only remedy is a history rewrite. Fail early instead.
+MAX_FILE_BYTES = 25 * 1024 * 1024
+WARN_FILE_BYTES = 5 * 1024 * 1024
+NEVER_COMMIT_SUFFIXES = {".mov", ".mp4", ".zip", ".dmg", ".iso", ".sqlite", ".db"}
+
 
 def load_vocabulary() -> set[str] | None:
     if not TAGS_FILE.exists():
@@ -188,6 +196,38 @@ def body_lines_outside_code(text: str, offset: int):
     _ = offset
 
 
+def check_file_sizes() -> list[Problem]:
+    """Guard against committing something that cannot be removed later.
+
+    Encrypted repos make this worse: git-crypt derives its nonce from the
+    plaintext, so any edit rewrites the whole ciphertext and git cannot delta
+    it. A large file in an encrypted repo costs its full size on every commit.
+    """
+    problems: list[Problem] = []
+    for path in sorted(REPO_ROOT.rglob("*")):
+        if not path.is_file() or path.is_symlink():
+            continue
+        rel = path.relative_to(REPO_ROOT)
+        if ".git" in rel.parts:
+            continue
+        try:
+            size = path.stat().st_size
+        except OSError:
+            continue
+        if size > MAX_FILE_BYTES:
+            problems.append(Problem(path, 0,
+                f"file is {size / 1024 / 1024:.1f}MB, over the {MAX_FILE_BYTES // 1024 // 1024}MB "
+                "limit — use an external store; a committed blob needs a history rewrite to remove"))
+        elif size > WARN_FILE_BYTES:
+            problems.append(Problem(path, 0,
+                f"file is {size / 1024 / 1024:.1f}MB, unusually large for a note vault — "
+                "confirm it belongs in git"))
+        if path.suffix.lower() in NEVER_COMMIT_SUFFIXES:
+            problems.append(Problem(path, 0,
+                f"'{path.suffix}' files do not belong in a note vault"))
+    return problems
+
+
 def collect_notes() -> list[Path]:
     notes = []
     for path in sorted(REPO_ROOT.rglob("*.md")):
@@ -206,6 +246,7 @@ def main() -> int:
     problems: list[Problem] = []
     notes = collect_notes()
     vocabulary = load_vocabulary()
+    problems.extend(check_file_sizes())
 
     # Slug index for wikilink resolution: filename stem -> paths.
     slugs: dict[str, list[Path]] = {}
