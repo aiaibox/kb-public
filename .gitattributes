@@ -6,5 +6,5 @@
 
 # Never let a merge driver mangle an append-only log silently.
 daily/**            merge=union
-invest/journal/**   merge=union
+finance/invest/journal/** merge=union
 infra/kb-history.md merge=union

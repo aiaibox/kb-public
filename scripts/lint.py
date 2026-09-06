@@ -324,13 +324,15 @@ def main() -> int:
                         problems.append(Problem(
                             path, lineno, f"[[{target}]] does not resolve in this repo"))
 
-            # invest/positions/* must link a thesis.
-            if rel.parts[:2] == ("invest", "positions"):
+            # invest/positions/* must link a thesis. Matched on the path
+            # suffix rather than the root, so the rule survives invest/ being
+            # nested under finance/.
+            if len(rel.parts) >= 3 and rel.parts[-3:-1] == ("invest", "positions"):
                 linked = {m.group(1).strip()
                           for _, line in body_lines_outside_code(text, offset)
                           for m in WIKILINK_RE.finditer(strip_inline_code(line))}
                 if not any(
-                    any(p.relative_to(REPO_ROOT).parts[:2] == ("invest", "thesis")
+                    any(p.relative_to(REPO_ROOT).parts[-3:-1] == ("invest", "thesis")
                         for p in slugs.get(t, []))
                     for t in linked
                 ):

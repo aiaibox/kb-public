@@ -107,12 +107,16 @@ moved. Demotion does not exist.
 | A machine or service you run? | `infra/hosts/`, `infra/services/` |
 | Something that broke? | `infra/incidents/` |
 | A procedure someone will follow? | `infra/runbooks/` |
-| A claim about an investment? | `invest/thesis/` |
-| A holding expressing a thesis? | `invest/positions/` |
-| A dated decision and its reasoning? | `invest/journal/` |
-| A standing rule you will not renegotiate mid-panic? | `invest/policy/` |
+| Cards, banking, spending, points? | `finance/` |
+| A claim about an investment? | `finance/invest/thesis/` |
+| A holding expressing a thesis? | `finance/invest/positions/` |
+| A dated decision and its reasoning? | `finance/invest/journal/` |
+| A standing rule you will not renegotiate mid-panic? | `finance/invest/policy/` |
+| A trip, a redemption, a place visited? | `travel/` |
+| An order, a return, a retailer dispute? | `shopping/` |
+| Training or health *practice*? | `health/` — actual medical status is `private/` |
 | A person, organisation, or meeting? | `people/`, `orgs/`, `meetings/` |
-| Household or hobby? | `home/` |
+| Household, garden, pets? | `home/` |
 | Mathematics? | `math/` |
 | **Genuinely do not know yet?** | `inbox/` — then triage weekly |
 
@@ -127,7 +131,7 @@ page.
 
 | Tier | Keep | Applies to |
 |---|---|---|
-| **Decision** | Everything needed to re-evaluate later: the context that forced it, options considered and rejected *with reasons*, the decision, its consequences, and what would reverse it | `decisions/`, `invest/thesis/`, `invest/journal/`, `infra/incidents/` |
+| **Decision** | Everything needed to re-evaluate later: the context that forced it, options considered and rejected *with reasons*, the decision, its consequences, and what would reverse it | `decisions/`, `finance/invest/thesis/`, `finance/invest/journal/`, `infra/incidents/` |
 | **Reference** | The conclusion, the numbers, and where they came from. Drop the derivation | `reference/`, `glossary/`, `infra/hosts/`, benchmarks |
 | **Volatile** | The figure, the date it was observed, and where to reverify. Nothing else | prices, fees, policies, availability, admissions rules |
 | **Discard** | Nothing. Do not create a note | one-off lookups, filler, near-duplicates of an existing note |
@@ -268,7 +272,7 @@ preference — and it is generous: the largest note in this vault is 389 lines
 > note, which is the better design anyway. Treat 600 as a property of the current
 > indexing approach, not of the vault.
 
-Append-only logs (`daily/`, `invest/journal/`) grow without limit by design.
+Append-only logs (`daily/`, `finance/invest/journal/`) grow without limit by design.
 They need no exemption from the rule above: a continuous dated record *is* one
 question.
 
@@ -311,7 +315,7 @@ Inline code is exempt, so documentation can write `[[slug]]` as an example.
 
 ## 7. Append, supersede, retain
 
-- **Append-only:** `daily/`, `invest/journal/`. Never retroactively edit.
+- **Append-only:** `daily/`, `finance/invest/journal/`. Never retroactively edit.
 - **Frozen after sign-off:** `infra/incidents/`. Correct the record in a new note.
 - **Supersede, do not delete:** mark stale content `> superseded by [[slug]]` and
   leave it. The history of a wrong belief is often the useful part.
