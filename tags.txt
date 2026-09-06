@@ -1,0 +1,27 @@
+# Type — what kind of note this is
+decision
+reference
+runbook
+index
+benchmark
+incident
+thesis
+position
+glossary
+note
+
+# Status
+import
+volatile
+needs-review
+superseded
+
+# Domain
+architecture
+privacy
+security
+git
+tooling
+knowledge-base
+ai
+infra

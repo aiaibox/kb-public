@@ -1,0 +1,9 @@
+# Notes are the product. Normalise line endings and keep diffs readable.
+*.md   text eol=lf diff=markdown
+*.py   text eol=lf diff=python
+*.sh   text eol=lf
+*      text=auto
+
+# Never let a merge driver mangle an append-only log silently.
+daily/**            merge=union
+invest/journal/**   merge=union

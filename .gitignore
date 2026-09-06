@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Obsidian per-machine state. The vault config lives at ~/kb/.obsidian and is
+# deliberately outside every repo, but guard against a stray copy.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# Watcher and tooling output
+.watcher.log
+*.tmp
+*.swp
+*~
+
+# Never. Credentials belong in ~/kb-private or 1Password, not here.
+*.pem
+*.key
+*.p12
+.env
+.env.*
+
+# Watcher dedupe state — machine-local, not shared
+.watcher-state.json

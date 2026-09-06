@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Refuse the commit if the repo does not lint.
+#
+# Enabled per repo with:  git config core.hooksPath .githooks
+# Bypass in a genuine emergency with:  git commit --no-verify
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+if [ ! -f "$REPO_ROOT/scripts/lint.py" ]; then
+  echo "pre-commit: scripts/lint.py is missing; refusing to commit blind" >&2
+  exit 1
+fi
+
+if ! python3 "$REPO_ROOT/scripts/lint.py" --quiet; then
+  echo >&2
+  echo "pre-commit: lint failed, commit aborted." >&2
+  echo "Fix the problems above, or use --no-verify if you truly must." >&2
+  exit 1
+fi

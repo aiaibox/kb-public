@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""Vault linter.
+
+One copy lives in each repo as scripts/lint.py. The repo name is derived from
+the directory that contains scripts/, so the file is byte-identical everywhere
+and needs no per-repo configuration.
+
+Usage:
+    python3 scripts/lint.py [--quiet]
+
+Exit status is 0 when the repo is clean and 1 when any error was reported.
+
+Stdlib only, deliberately. The vault must stay checkable on a machine with
+nothing installed but Python.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import re
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_NAME = REPO_ROOT.name
+
+# Directories that hold no notes and are never checked as notes.
+SKIP_DIRS = {".git", ".githooks", "_templates", "scripts", "node_modules"}
+
+# Files that live in a repo but are documentation, not notes: no frontmatter
+# is expected and none is required.
+DOC_FILES = {"AGENTS.md", "CLAUDE.md", "README.md", "RULES.md",
+             "WORKING-RULES.md"}
+
+REQUIRED_FIELDS = ("id", "title", "repo", "tags", "created", "updated")
+
+# Controlled tag vocabulary. One tag per line; blank lines and # comments
+# ignored. Absent file means the check is skipped, so a repo can opt out.
+TAGS_FILE = REPO_ROOT / "tags.txt"
+MAX_TAGS = 5
+
+
+def load_vocabulary() -> set[str] | None:
+    if not TAGS_FILE.exists():
+        return None
+    return {
+        line.strip()
+        for line in TAGS_FILE.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+
+# Crockford base32, excluding I, L, O and U.
+ULID_RE = re.compile(r"^[0-7][0-9A-HJKMNP-TV-Z]{25}$")
+
+# [[slug]] and [[slug|display text]]. Not matched inside fenced or inline code.
+WIKILINK_RE = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]")
+
+# Inline code spans are blanked before link resolution so that documentation can
+# write `[[slug]]` as an example without the linter chasing it.
+INLINE_CODE_RE = re.compile(r"`+[^`]*`+")
+
+# A line carrying this marker is exempt from the secret and hostname scans.
+# Needed so AGENTS.md can document what a forbidden pattern looks like.
+ALLOW_MARKER = "lint:allow"
+
+SECRET_PATTERNS = [
+    ("AWS access key id", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
+    ("AWS session/secret key", re.compile(r"(?i)\baws_(?:secret|session)\w*\s*[:=]\s*\S{16,}")),
+    ("OpenAI-style API key", re.compile(r"\bsk-[A-Za-z0-9_\-]{20,}")),
+    ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b")),
+    ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b")),
+    ("Slack token", re.compile(r"\bxox[abprs]-[0-9A-Za-z\-]{10,}")),
+    ("private key block", re.compile(r"-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----")),
+    ("inline credential", re.compile(
+        r"(?i)\b(?:password|passwd|secret|api[_-]?key|access[_-]?token)\s*[:=]\s*"
+        r"['\"]?[^\s'\"<>{}$]{8,}")),
+]
+
+# public/ only. RFC1918 ranges and internal-only hostname suffixes.
+PRIVATE_IP_RE = re.compile(
+    r"\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    r"|192\.168\.\d{1,3}\.\d{1,3}"
+    r"|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})\b")
+INTERNAL_HOST_RE = re.compile(r"\b[a-z0-9][a-z0-9\-]*\.(?:internal|local|lan)\b", re.I)
+
+
+class Problem:
+    __slots__ = ("path", "line", "message")
+
+    def __init__(self, path: Path, line: int, message: str) -> None:
+        self.path = path
+        self.line = line
+        self.message = message
+
+    def render(self) -> str:
+        rel = self.path.relative_to(REPO_ROOT)
+        where = f"{rel}:{self.line}" if self.line else str(rel)
+        return f"{where}: {self.message}"
+
+
+def split_frontmatter(text: str) -> tuple[dict[str, str], int, str | None]:
+    """Return (fields, body_offset, error).
+
+    body_offset is the 1-based line number where the body begins, used so that
+    body problems report their true line in the file.
+    """
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}, 1, "missing YAML frontmatter (file must start with ---)"
+
+    end = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() in ("---", "..."):
+            end = i
+            break
+    if end is None:
+        return {}, 1, "frontmatter is never closed with ---"
+
+    fields: dict[str, str] = {}
+    pending_key: str | None = None
+    collected: list[str] = []
+
+    for raw in lines[1:end]:
+        if not raw.strip():
+            continue
+        # Block-sequence item belonging to the previous key.
+        if raw.lstrip().startswith("- ") and pending_key:
+            collected.append(raw.lstrip()[2:].strip())
+            continue
+        if pending_key and collected:
+            fields[pending_key] = ", ".join(collected)
+            collected = []
+        m = re.match(r"^([A-Za-z_][A-Za-z0-9_\-]*)\s*:\s*(.*)$", raw)
+        if not m:
+            pending_key = None
+            continue
+        key, value = m.group(1), m.group(2).strip()
+        if value:
+            fields[key] = value.strip("\"'")
+            pending_key = None
+        else:
+            pending_key = key
+    if pending_key and collected:
+        fields[pending_key] = ", ".join(collected)
+
+    return fields, end + 2, None
+
+
+def strip_inline_code(line: str) -> str:
+    """Blank out inline code spans, preserving length so columns stay honest."""
+    return INLINE_CODE_RE.sub(lambda m: " " * len(m.group(0)), line)
+
+
+def parse_tags(value: str) -> list[str]:
+    value = value.strip()
+    if value.startswith("[") and value.endswith("]"):
+        value = value[1:-1]
+    return [t.strip().strip("\"'") for t in value.split(",") if t.strip()]
+
+
+def check_date(value: str) -> str | None:
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", value):
+        return "must be an ISO date (YYYY-MM-DD)"
+    try:
+        dt.date.fromisoformat(value)
+    except ValueError:
+        return f"is not a real calendar date ({value})"
+    return None
+
+
+def body_lines_outside_code(text: str, offset: int):
+    """Yield (lineno, line) for body lines, skipping fenced code blocks."""
+    in_fence = False
+    fence = ""
+    for idx, line in enumerate(text.splitlines()):
+        stripped = line.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            marker = stripped[:3]
+            if not in_fence:
+                in_fence, fence = True, marker
+            elif marker == fence:
+                in_fence = False
+            continue
+        if in_fence:
+            continue
+        yield idx + 1, line
+    _ = offset
+
+
+def collect_notes() -> list[Path]:
+    notes = []
+    for path in sorted(REPO_ROOT.rglob("*.md")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in SKIP_DIRS for part in rel.parts):
+            continue
+        notes.append(path)
+    return notes
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=f"Lint the '{REPO_NAME}' vault repo.")
+    ap.add_argument("--quiet", action="store_true", help="print only problems")
+    args = ap.parse_args()
+
+    problems: list[Problem] = []
+    notes = collect_notes()
+    vocabulary = load_vocabulary()
+
+    # Slug index for wikilink resolution: filename stem -> paths.
+    slugs: dict[str, list[Path]] = {}
+    for path in notes:
+        slugs.setdefault(path.stem, []).append(path)
+
+    seen_ids: dict[str, Path] = {}
+    checked = 0
+
+    for path in notes:
+        rel = path.relative_to(REPO_ROOT)
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            problems.append(Problem(path, 0, "file is not valid UTF-8"))
+            continue
+
+        is_doc = path.name in DOC_FILES and path.parent == REPO_ROOT
+
+        if not is_doc:
+            checked += 1
+            fields, offset, fm_error = split_frontmatter(text)
+            if fm_error:
+                problems.append(Problem(path, 1, fm_error))
+            else:
+                for key in REQUIRED_FIELDS:
+                    if key not in fields or not fields[key].strip():
+                        problems.append(Problem(path, 1, f"frontmatter is missing '{key}'"))
+
+                note_id = fields.get("id", "").strip()
+                if note_id:
+                    if not ULID_RE.match(note_id):
+                        problems.append(Problem(path, 1, f"'id' is not a valid ULID: {note_id}"))
+                    elif note_id in seen_ids:
+                        first = seen_ids[note_id].relative_to(REPO_ROOT)
+                        problems.append(Problem(path, 1, f"duplicate id, already used by {first}"))
+                    else:
+                        seen_ids[note_id] = path
+
+                declared = fields.get("repo", "").strip()
+                if declared and declared != REPO_NAME:
+                    problems.append(Problem(
+                        path, 1,
+                        f"'repo: {declared}' does not match this repo ('{REPO_NAME}')"))
+
+                for key in ("created", "updated"):
+                    value = fields.get(key, "").strip()
+                    if value:
+                        err = check_date(value)
+                        if err:
+                            problems.append(Problem(path, 1, f"'{key}' {err}"))
+
+                if "tags" in fields:
+                    tags = parse_tags(fields["tags"])
+                    if not tags:
+                        problems.append(Problem(path, 1, "'tags' is present but empty"))
+                    elif len(tags) > MAX_TAGS:
+                        problems.append(Problem(
+                            path, 1,
+                            f"{len(tags)} tags, maximum is {MAX_TAGS} — "
+                            "a note needing more has not been split"))
+                    if vocabulary is not None:
+                        for tag in tags:
+                            if tag not in vocabulary:
+                                problems.append(Problem(
+                                    path, 1,
+                                    f"tag '{tag}' is not in tags.txt — add it "
+                                    "deliberately or use an existing one"))
+
+            # Wikilinks must resolve inside this repo.
+            for lineno, line in body_lines_outside_code(text, offset):
+                for m in WIKILINK_RE.finditer(strip_inline_code(line)):
+                    target = m.group(1).strip()
+                    if target not in slugs:
+                        problems.append(Problem(
+                            path, lineno, f"[[{target}]] does not resolve in this repo"))
+
+            # invest/positions/* must link a thesis.
+            if rel.parts[:2] == ("invest", "positions"):
+                linked = {m.group(1).strip()
+                          for _, line in body_lines_outside_code(text, offset)
+                          for m in WIKILINK_RE.finditer(strip_inline_code(line))}
+                if not any(
+                    any(p.relative_to(REPO_ROOT).parts[:2] == ("invest", "thesis")
+                        for p in slugs.get(t, []))
+                    for t in linked
+                ):
+                    problems.append(Problem(
+                        path, 1, "position note does not link to a note in invest/thesis/"))
+
+        # Secret scan runs on every markdown file, docs included.
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if ALLOW_MARKER in line:
+                continue
+            for label, pattern in SECRET_PATTERNS:
+                if pattern.search(line):
+                    problems.append(Problem(path, lineno, f"possible {label} committed"))
+            if REPO_NAME == "public":
+                if PRIVATE_IP_RE.search(line):
+                    problems.append(Problem(path, lineno, "private IP address in a public repo"))
+                if INTERNAL_HOST_RE.search(line):
+                    problems.append(Problem(path, lineno, "internal hostname in a public repo"))
+
+    for problem in sorted(problems, key=lambda p: (str(p.path), p.line)):
+        print(problem.render(), file=sys.stderr)
+
+    if problems:
+        print(f"\n{REPO_NAME}: {len(problems)} problem(s) in {len(notes)} file(s)",
+              file=sys.stderr)
+        return 1
+    if not args.quiet:
+        vocab_note = "" if vocabulary is None else f", {len(vocabulary)} tags allowed"
+        print(f"{REPO_NAME}: clean ({checked} note(s) checked{vocab_note})")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
