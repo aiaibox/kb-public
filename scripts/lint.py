@@ -83,6 +83,7 @@ SECRET_PATTERNS = [
     ("OpenAI-style API key", re.compile(r"\bsk-[A-Za-z0-9_\-]{20,}")),
     ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b")),
     ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b")),
+    ("GLM/Zhipu API key", re.compile(r"\b[0-9a-f]{32}\.[A-Za-z0-9]{16}\b")),
     ("Slack token", re.compile(r"\bxox[abprs]-[0-9A-Za-z\-]{10,}")),
     ("private key block", re.compile(r"-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----")),
     ("inline credential", re.compile(
@@ -177,6 +178,12 @@ def parse_tags(value: str) -> list[str]:
     if value.startswith("[") and value.endswith("]"):
         value = value[1:-1]
     return [t.strip().strip("\"'") for t in value.split(",") if t.strip()]
+
+
+def tags_of(path: Path) -> list[str]:
+    """Tags of another note, parsed the same way its own lint pass would."""
+    fields, _, err = split_frontmatter(path.read_text(encoding="utf-8"))
+    return [] if err else parse_tags(fields.get("tags", ""))
 
 
 def check_date(value: str) -> str | None:
@@ -310,6 +317,9 @@ def main() -> int:
                         err = check_date(value)
                         if err:
                             problems.append(Problem(path, 1, f"'{key}' {err}"))
+                c, u = fields.get("created", "").strip(), fields.get("updated", "").strip()
+                if c and u and u < c:
+                    problems.append(Problem(path, 1, f"'updated' ({u}) precedes 'created' ({c})"))
 
                 if "tags" in fields:
                     tags = parse_tags(fields["tags"])
@@ -344,14 +354,8 @@ def main() -> int:
                 linked = {m.group(1).strip()
                           for _, line in body_lines_outside_code(text, offset)
                           for m in WIKILINK_RE.finditer(strip_inline_code(line))}
-                if not any(
-                    any("thesis" in parse_tags(
-                            (re.search(r"^tags:\s*(.+)$",
-                                       q.read_text(encoding="utf-8"), re.M) or
-                             type("x", (), {"group": lambda s, n: ""})()).group(1))
-                        for q in slugs.get(t, []))
-                    for t in linked
-                ):
+                if not any("thesis" in tags_of(q)
+                           for t in linked for q in slugs.get(t, [])):
                     problems.append(Problem(
                         path, 1,
                         "note tagged 'position' does not link a note tagged 'thesis'"))

@@ -10,8 +10,7 @@
 .obsidian/workspace-mobile.json
 .obsidian/cache
 
-# Watcher and tooling output
-.watcher.log
+# Tooling output
 *.tmp
 *.swp
 *~
