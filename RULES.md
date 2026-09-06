@@ -20,57 +20,99 @@ human, with no tooling. No dependence on a plugin, a database, or a link graph.
 
 ## 2. Which repo
 
-### What each is for
+### The test, in one question each
 
-| Repo | Scope | Typical contents |
+| Repo | Ask yourself | Scope |
 |---|---|---|
-| **public** | Knowledge written *for strangers*, publishable permanently | term definitions, generic procedures, reading notes on public material, sanitised homelab writeups, design decision records |
-| **personal** | **The default.** Your own life and the systems you run | hardware you own, money you manage, family, health, hobbies, learning, your own history |
-| **business** | Anything naming an employer, client, colleague, or *their* systems | client notes, engagements, meetings, rates and contract terms, internal infrastructure |
-| **private** | Credentials, legal/medical/identity, intimate | identity documents, medical records, estate instructions, private personal material |
+| **public** | *Would I put this on a blog?* | Knowledge **you produced** that would help a stranger: decisions with their reasoning, procedures you verified, syntheses you made. General criteria, rules and practices. |
+| **personal** | *Would I show this to a friend or relative?* | **The default.** Preferences and things specific to you: hobbies, tastes, schedules, memberships, the systems you run, how you *think* about money and health. |
+| **private** | *Only my spouse — or nobody?* | Secrets: actual financial status, medical status, credentials, legal matters, and lifestyle that cannot be shared. |
+| **business** | *Is this about work, a client, or an employer?* | Projects, engagements, OKRs, meetings, rates, and an employer's own systems. |
 
-The distinction between `personal` and `business` is **whose information it is**,
-not where you were when you learned it. Kubernetes notes from your homelab are
-`personal`; the same technology described as your employer runs it is `business`.
+These questions are the primary test. Apply them first; the ladder below only
+settles cases where two of them both seem to say yes.
 
-### The ladder
+### public is not a dumping ground
+
+"General knowledge" is not sufficient reason to keep a note. A personal knowledge
+base gains nothing from facts you could look up again in ten seconds. What earns
+a place in `public` is that **you made something**: a decision recorded with the
+options you rejected, a procedure you actually verified, a synthesis nobody else
+has written. If the note would be equally good copied from a search result, do
+not keep it.
+
+### The line that matters most: reasoning versus status
+
+The same subject splits across two repos depending on whether it is *how you
+think* or *what is true of you*.
+
+| Reasoning → `personal` | Actual status → `private` |
+|---|---|
+| how to weigh a single-country overweight | the balances in each sleeve |
+| how to model a withdrawal rate | the projected portfolio total |
+| how to read a DEXA result | your body-fat percentage |
+| which card benefits are worth the fee | your credit limits and balances |
+| how to think about a contract term | the contract you signed |
+
+**Financial problems, not financial status. Health practices, not medical
+status.** The reasoning is reusable and shareable; the numbers identify you.
+
+### Whose information is it?
+
+`personal` versus `business` is **not** a sensitivity question — it is an
+ownership one. A colleague's name is no more secret than your own; it simply is
+not yours to record.
+
+| Material | Repo |
+|---|---|
+| Your CV and career history | `personal` — your history, even though it names employers |
+| Your homelab Kubernetes notes | `personal`, promotable to `public` sanitised |
+| Your employer's cluster configuration | `business` |
+| Generic QA or Kubernetes practice you wrote up | `public` |
+| A colleague's or referee's contact details | **nowhere.** You are a custodian, not an owner |
+
+Note the ambiguity in the word *reference*: technical reference material on work
+*topics* is usually `public` or `personal`; only your employer's own
+configuration is `business`.
+
+### Family follows the same rule as you
+
+Apply the four questions to a family member exactly as you would to yourself.
+General context is `personal`; actual status is `private`.
+
+| | |
+|---|---|
+| `personal` | first name, life stage, which university, that they play a sport |
+| `private` | full legal name with exact date of birth, medical status, and anything revealing where they are at a given time |
+
+**Time-bounded exception.** Eric is 17 until **2026-10-27**. Until then treat his
+full name, date of birth and current school as `private` even in combination with
+nothing else — a minor's whereabouts carries a risk an adult's does not. After
+that date this paragraph is obsolete and the general rule above applies with no
+exception; delete it.
+
+### The ladder, for genuine ties
 
 Ask in order. **Stop at the first yes.** Most restrictive wins.
 
-1. Is it a credential, a legal/medical/identity document, or intimate? → **private**
-2. Does it name or concern an employer, client, colleague, or *their* systems? → **business**
-3. Does it involve family, health, money, or anything identifying you or your household? → **personal**
-4. Could anyone read it, forever, with no harm and nothing identifying? → **public**
+1. Credential, legal/medical/identity document, actual financial status, or intimate? → **private**
+2. Names or concerns an employer, client, colleague, or *their* systems? → **business**
+3. Specific to you or your household, but shareable with a friend? → **personal**
+4. Something you produced that anyone could read forever, with nothing identifying? → **public**
 5. Still unsure → **personal**.
 
-**Never default to public.** Publication is permanent and cannot be undone.
-Promotion from `personal` to `public` is a deliberate review step where the fact
-is *restated* in sanitised form, not moved. Demotion does not exist.
-
-### Hard cases, decided
-
-| Material | Repo | Why |
-|---|---|---|
-| Homelab Kubernetes notes | `personal`, promotable to `public` sanitised | your systems |
-| Employer's Kubernetes setup | `business` | their systems, even if you configured it |
-| Your salary or portfolio balance | `personal` — or `private` if it identifies net worth in detail | your money; the *combination* is what leaks |
-| An offer letter or contract PDF | `private` | a legal document, not a note about one |
-| A colleague's phone number | **nowhere.** Not `business` | you are a custodian of it, not an owner |
-| A child's name + date of birth + school | `private` only | the combination enables identity theft |
-| Notes on a public article | `public/sources` if generic | written for strangers |
-| A benchmark you ran on your own hardware | `personal/infra`, promotable | your measurement |
-| Which password manager you use | `personal` — never the value | see §8 |
+**Never default to public.** Publication is permanent. Promotion from `personal`
+is a deliberate review step where the fact is *restated* in sanitised form, not
+moved. Demotion does not exist.
 
 ### Then choose the folder
 
-Once the repo is settled, ask in order:
-
 | Question | Folder |
 |---|---|
-| Is it a dated log entry? | `daily/YYYY/MM/` |
+| A dated log entry? | `daily/YYYY/MM/` |
 | A machine or service you run? | `infra/hosts/`, `infra/services/` |
 | Something that broke? | `infra/incidents/` |
-| A procedure with steps someone will follow? | `infra/runbooks/` |
+| A procedure someone will follow? | `infra/runbooks/` |
 | A claim about an investment? | `invest/thesis/` |
 | A holding expressing a thesis? | `invest/positions/` |
 | A dated decision and its reasoning? | `invest/journal/` |
@@ -80,8 +122,8 @@ Once the repo is settled, ask in order:
 | Mathematics? | `math/` |
 | **Genuinely do not know yet?** | `inbox/` — then triage weekly |
 
-`inbox/` is a real answer, not a failure. Filing something wrongly costs more
-than filing it late. What is not acceptable is leaving it there past 30 days.
+`inbox/` is a real answer, not a failure. Filing wrongly costs more than filing
+late. Leaving it there past 30 days is the only unacceptable outcome.
 
 ## 3. How much detail — four tiers
 
