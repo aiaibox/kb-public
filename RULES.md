@@ -157,6 +157,25 @@ content, not names.
 `inbox/` is a real answer, not a failure. Filing wrongly costs more than filing
 late. Leaving it there past 30 days is the only unacceptable outcome.
 
+### A missing folder from the sets above was lost, not retired
+
+Git does not track directories. A folder that is emptied — by triage, by a
+move — disappears from disk and from every fresh clone, silently. Both `inbox/`
+folders in `business` and `private` vanished exactly this way.
+
+So: **if a note belongs in one of the folders listed above and that folder is not
+there, create it and file the note.** Then add a `.gitkeep` inside it, so the
+next time it empties it survives. Recreating a declared folder is not inventing
+one.
+
+The opposite case is unchanged and still forbidden: **a folder outside the sets
+above is never created at filing time.** If something seems to need one, it goes
+to `inbox/` and the folder set is amended deliberately, in
+`personal/tech/kb/kb-directory-scaffold.md`, or not at all. A folder that was
+removed *because the layout dropped it* — the third-level
+`finance/invest/{journal,positions,thesis,policy}`, for instance — must not
+reappear; those invariants live on tags now.
+
 ## 3. How much detail — four tiers
 
 Depth follows **durability and reuse**, never the length of the source. A
