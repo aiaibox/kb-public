@@ -25,6 +25,7 @@ import
 volatile
 needs-review
 superseded
+promote-to-public
 
 # Domain
 infra

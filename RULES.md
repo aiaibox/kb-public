@@ -32,14 +32,35 @@ human, with no tooling. No dependence on a plugin, a database, or a link graph.
 These questions are the primary test. Apply them first; the ladder below only
 settles cases where two of them both seem to say yes.
 
-### public is not a dumping ground
+### Two tests for public, and both must pass
 
-"General knowledge" is not sufficient reason to keep a note. A personal knowledge
-base gains nothing from facts you could look up again in ten seconds. What earns
-a place in `public` is that **you made something**: a decision recorded with the
-options you rejected, a procedure you actually verified, a synthesis nobody else
-has written. If the note would be equally good copied from a search result, do
-not keep it.
+**Test 1 — nothing identifies me.** No names, employer, places I live, internal
+hostnames or addresses, account details.
+
+**Test 2 — nothing *discloses* me.** Ask: **does this reveal what I own, owe,
+weigh, earn, or plan?** If yes it stays `personal`, however anonymous it reads.
+
+The second test is the one people skip. "60% US, 25% developed international, 10%
+China" contains no name — and is still *your allocation*. "300–500 kcal deficit
+plus strength work" names nobody — and is still *your body*. **Absence of a name
+is not absence of disclosure.**
+
+What clears both tests is knowledge that would save a stranger real work: a
+procedure you verified, a comparison carrying the options you rejected, a
+corrected misconception, a public statistic you tracked down. A **distilled note
+counts as produced work** — one with Verify, Rejected and References sections is
+materially more than a search result. The bar excludes *bare* facts, not
+distillations.
+
+### Nothing promotes itself
+
+`public` can only grow if something moves material into it, and no process does
+that automatically — which is why it stays small while `personal` accumulates.
+
+At triage, a note passing both tests above gets tagged **`promote-to-public`**.
+A periodic sweep then **restates** each one in `public` and drops the tag.
+Promotion remains a restatement, never a file move: the sanitised fact is written
+fresh, and the original stays where it is.
 
 ### The line that matters most: reasoning versus status
 
@@ -101,24 +122,37 @@ moved. Demotion does not exist.
 
 ### Then choose the folder
 
+Two levels maximum, and no folder is created at filing time — the sets below are
+fixed, and changing them is a decision recorded in `AGENTS.md`.
+
+**personal (10)**
+
 | Question | Folder |
 |---|---|
-| A dated log entry? | `daily/YYYY/MM/` |
-| A machine or service you run? | `infra/hosts/`, `infra/services/` |
-| Something that broke? | `infra/incidents/` |
-| A procedure someone will follow? | `infra/runbooks/` |
-| Cards, banking, spending, points? | `finance/` |
-| A claim about an investment? | `finance/invest/thesis/` |
-| A holding expressing a thesis? | `finance/invest/positions/` |
-| A dated decision and its reasoning? | `finance/invest/journal/` |
-| A standing rule you will not renegotiate mid-panic? | `finance/invest/policy/` |
-| A trip, a redemption, a place visited? | `travel/` |
-| An order, a return, a retailer dispute? | `shopping/` |
-| Training or health *practice*? | `health/` — actual medical status is `private/` |
-| A person, organisation, or meeting? | `people/`, `orgs/`, `meetings/` |
-| Household, garden, pets? | `home/` |
-| Mathematics? | `math/` |
-| **Genuinely do not know yet?** | `inbox/` — then triage weekly |
+| Money: cards, banking, spending, tax, retirement, insurance? | `finance/` |
+| A portfolio thesis, position, or standing rule? | `finance/invest/` |
+| The household: house, garden, pets, auto, food, shopping? | `living/` |
+| A trip, hotel, redemption, packing list? | `travel/` |
+| A person — family, friend, collaborator, or your own career? | `people/` |
+| Models, homelab, or the vault itself? | `tech/ai/`, `tech/infra/`, `tech/kb/` |
+| Your own study, or the children's schooling? | `education/learning/`, `education/school/` |
+| Training, nutrition, sport — **practice**, not status? | `health/` |
+| Film, TV, music, games? | `media/` |
+| A dated entry? | `log/2026/` |
+| **Genuinely undecided?** | `inbox/` — triage weekly |
+
+**public (5)** — `decisions/` · `howto/` · `notes/glossary/` · `notes/reading/`
+· `research/` · `writing/`. **No `inbox/`**: this repo is pushed automatically,
+so nothing may land here unreviewed.
+
+**business (7)** — `systems/{runbooks,incidents,vendors}` · `projects/` ·
+`work/` (the craft plus OKRs) · `decisions/` · `people/` ·
+`log/{meetings,2026}` · `inbox/`.
+
+**private (6)** — `finance/{accounts,tax,compensation}` ·
+`identity/{documents,credentials}` · `health/` · `legal/` ·
+`lifestyle/{log,notes}` · `inbox/`. Filenames are **numeric**: git-crypt hides
+content, not names.
 
 `inbox/` is a real answer, not a failure. Filing wrongly costs more than filing
 late. Leaving it there past 30 days is the only unacceptable outcome.

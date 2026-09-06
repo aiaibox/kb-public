@@ -12,6 +12,7 @@
 # Canonical sources:
 #   personal/scripts/lint.py, newnote.sh, import-distilled.py, distribute.sh
 #   personal/.githooks/pre-commit, .gitignore, .gitattributes, .editorconfig
+#   personal/tags.txt (the controlled vocabulary)
 #   personal/_templates/
 #   public/RULES.md, public/WORKING-RULES.md
 #
@@ -35,6 +36,7 @@ FILES=(
   ".gitignore"
   ".gitattributes"
   ".editorconfig"
+  "tags.txt"
 )
 EXEC=("scripts/lint.py" "scripts/newnote.sh" "scripts/import-distilled.py"
       "scripts/distribute.sh" ".githooks/pre-commit")

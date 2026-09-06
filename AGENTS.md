@@ -28,14 +28,18 @@ Lint mechanically blocks private IPs and `.internal`/`.local`/`.lan` hostnames
 **in this repo only**. That is a backstop for the cases a regex can catch, not a
 substitute for reading what you are about to publish.
 
-## Layout
-- `glossary/` — term definitions, one concept per note
-- `howto/` — generic procedures with no local specifics
-- `sources/` — reading notes on public material
-- `infra/` — homelab writeups, sanitised
-- `decisions/` — ADRs safe to publish
-- `RULES.md` — **canonical** shared rules. Edit here, then run
-  `personal/scripts/distribute.sh`
+## Layout — 5 top-level, no inbox
+
+- `decisions/` — ADRs on generic technical choices: chosen, rejected, why
+- `howto/` — reproducible procedures with no personal or employer specifics
+- `notes/` — `glossary/` one term per note · `reading/` notes on others' work
+- `research/` — research status and progress
+- `writing/` — essays, long-form, talks
+
+**There is deliberately no `inbox/`.** `sync.sh` pushes this repo automatically,
+so anything landing here reaches a world-readable remote before review.
+Nothing is *routed* to `public` — material arrives because it was written for
+here, or promoted by restatement from `personal` (see `RULES.md` §2).
 
 ## Writing for an audience
 
