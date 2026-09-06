@@ -85,12 +85,6 @@ General context is `personal`; actual status is `private`.
 | `personal` | first name, life stage, which university, that they play a sport |
 | `private` | full legal name with exact date of birth, medical status, and anything revealing where they are at a given time |
 
-**Time-bounded exception.** Eric is 17 until **2026-10-27**. Until then treat his
-full name, date of birth and current school as `private` even in combination with
-nothing else — a minor's whereabouts carries a risk an adult's does not. After
-that date this paragraph is obsolete and the general rule above applies with no
-exception; delete it.
-
 ### The ladder, for genuine ties
 
 Ask in order. **Stop at the first yes.** Most restrictive wins.
