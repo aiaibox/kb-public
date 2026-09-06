@@ -6,7 +6,6 @@ tags: [travel, import]
 created: 2026-09-06
 updated: 2026-09-06
 source: chatgpt-export-2026-09-05
-suggested_folder: inbox
 ---
 
 # Checked luggage: 100–120 gauge stretch film + padding

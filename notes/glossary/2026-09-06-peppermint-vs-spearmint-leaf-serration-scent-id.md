@@ -6,7 +6,6 @@ tags: [reference, home, import]
 created: 2026-09-06
 updated: 2026-09-06
 source: chatgpt-export-2026-09-05
-suggested_folder: inbox
 ---
 
 # Peppermint vs spearmint: leaf, serration, scent ID

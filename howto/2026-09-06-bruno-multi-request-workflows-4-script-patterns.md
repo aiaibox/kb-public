@@ -6,7 +6,6 @@ tags: [qa, reference, runbook, import]
 created: 2026-09-06
 updated: 2026-09-06
 source: chatgpt-export-2026-09-05
-suggested_folder: howto
 ---
 
 # Bruno multi-request workflows: 4 script patterns

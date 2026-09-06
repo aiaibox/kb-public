@@ -47,8 +47,14 @@ TODAY="$(date +%F)"
 
 mkdir -p "$(dirname "$TARGET")"
 
-# Placeholders are substituted with awk rather than sed so that titles
-# containing / & | and other sed-significant characters pass through intact.
+# Placeholders are substituted with awk rather than sed so that / and | pass
+# through intact. awk's gsub still treats & and \ specially in the replacement
+# — "Fish & chips" would come out as "Fish {{title}} chips" — so both are
+# escaped first. Double quotes would break the quoted YAML title; they become
+# single quotes.
+TITLE="${TITLE//\\/\\\\}"
+TITLE="${TITLE//&/\\&}"
+TITLE="${TITLE//\"/\'}"
 ULID="$ULID" TITLE="$TITLE" REPO_NAME="$REPO_NAME" TODAY="$TODAY" \
 awk '{
   gsub(/\{\{id\}\}/,      ENVIRON["ULID"])

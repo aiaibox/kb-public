@@ -6,7 +6,6 @@ tags: [reference, finance, volatile, import]
 created: 2026-09-06
 updated: 2026-09-06
 source: chatgpt-export-2026-09-05
-suggested_folder: sources
 ---
 
 # Global $1M+ households: ~35-45M; ~57.5-60M individuals

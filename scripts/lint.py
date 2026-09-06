@@ -120,15 +120,12 @@ class Problem:
         return f"{where}: {prefix}{self.message}"
 
 
-def split_frontmatter(text: str) -> tuple[dict[str, str], int, str | None]:
-    """Return (fields, body_offset, error).
-
-    body_offset is the 1-based line number where the body begins, used so that
-    body problems report their true line in the file.
-    """
+def split_frontmatter(text: str) -> tuple[dict[str, str], str | None]:
+    """Return (fields, error). Line numbers for body problems come from
+    body_lines_outside_code, which walks the whole file."""
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
-        return {}, 1, "missing YAML frontmatter (file must start with ---)"
+        return {}, "missing YAML frontmatter (file must start with ---)"
 
     end = None
     for i in range(1, len(lines)):
@@ -136,7 +133,7 @@ def split_frontmatter(text: str) -> tuple[dict[str, str], int, str | None]:
             end = i
             break
     if end is None:
-        return {}, 1, "frontmatter is never closed with ---"
+        return {}, "frontmatter is never closed with ---"
 
     fields: dict[str, str] = {}
     pending_key: str | None = None
@@ -165,7 +162,7 @@ def split_frontmatter(text: str) -> tuple[dict[str, str], int, str | None]:
     if pending_key and collected:
         fields[pending_key] = ", ".join(collected)
 
-    return fields, end + 2, None
+    return fields, None
 
 
 def strip_inline_code(line: str) -> str:
@@ -182,7 +179,7 @@ def parse_tags(value: str) -> list[str]:
 
 def tags_of(path: Path) -> list[str]:
     """Tags of another note, parsed the same way its own lint pass would."""
-    fields, _, err = split_frontmatter(path.read_text(encoding="utf-8"))
+    fields, err = split_frontmatter(path.read_text(encoding="utf-8"))
     return [] if err else parse_tags(fields.get("tags", ""))
 
 
@@ -196,7 +193,7 @@ def check_date(value: str) -> str | None:
     return None
 
 
-def body_lines_outside_code(text: str, offset: int):
+def body_lines_outside_code(text: str):
     """Yield (lineno, line) for body lines, skipping fenced code blocks."""
     in_fence = False
     fence = ""
@@ -212,7 +209,6 @@ def body_lines_outside_code(text: str, offset: int):
         if in_fence:
             continue
         yield idx + 1, line
-    _ = offset
 
 
 def check_file_sizes() -> list[Problem]:
@@ -287,7 +283,7 @@ def main() -> int:
 
         if not is_doc:
             checked += 1
-            fields, offset, fm_error = split_frontmatter(text)
+            fields, fm_error = split_frontmatter(text)
             if fm_error:
                 problems.append(Problem(path, 1, fm_error))
             else:
@@ -339,7 +335,7 @@ def main() -> int:
                                     "deliberately or use an existing one"))
 
             # Wikilinks must resolve inside this repo.
-            for lineno, line in body_lines_outside_code(text, offset):
+            for lineno, line in body_lines_outside_code(text):
                 for m in WIKILINK_RE.finditer(strip_inline_code(line)):
                     target = m.group(1).strip()
                     if target not in slugs:
@@ -352,7 +348,7 @@ def main() -> int:
             # and no third directory level is needed to express it.
             if "position" in parse_tags(fields.get("tags", "")):
                 linked = {m.group(1).strip()
-                          for _, line in body_lines_outside_code(text, offset)
+                          for _, line in body_lines_outside_code(text)
                           for m in WIKILINK_RE.finditer(strip_inline_code(line))}
                 if not any("thesis" in tags_of(q)
                            for t in linked for q in slugs.get(t, [])):
@@ -367,7 +363,7 @@ def main() -> int:
             # note is doing synthesis rather than cross-referencing.
             if "topic" in parse_tags(fields.get("tags", "")):
                 linked = {m.group(1).strip()
-                          for _, line in body_lines_outside_code(text, offset)
+                          for _, line in body_lines_outside_code(text)
                           for m in WIKILINK_RE.finditer(strip_inline_code(line))}
                 if len(linked) < MIN_TOPIC_LINKS:
                     problems.append(Problem(
