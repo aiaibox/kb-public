@@ -16,7 +16,8 @@
 *.swp
 *~
 
-# Never. Credentials belong in ~/kb-private or 1Password, not here.
+# Never. Credentials belong in Bitwarden, or in ~/kb/private if a password
+# manager genuinely cannot hold them.
 *.pem
 *.key
 *.p12
