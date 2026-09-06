@@ -153,60 +153,71 @@ after it stopped being true.
 
 ### Captured chat conversations, specifically
 
-A conversation is **not** an artefact worth keeping. What was concluded is.
-`watcher.py` therefore files a distilled note and **discards the transcript**.
-A manual import should produce the same shape.
+A conversation is **not** an artefact worth keeping. What was concluded is. The
+transcript is discarded; only the distillation survives. The goal for every
+captured note is that the solution is:
 
-Every captured note carries:
+- **repeatable** — someone can re-execute it, because the exact commands and
+  values are present and there is a check that proves it worked
+- **traceable** — someone can verify where it came from, because every source is
+  linked and every measured number carries its date and method
+
+Use the `capture` template, or let `watcher.py` produce it automatically.
 
 | Section | Content |
 |---|---|
-| Frontmatter | `source:` naming the export, plus the source URL and turn count in the body |
-| **Summary** | Exactly 3 bullets. What was *concluded* — never "the user asked about X" |
-| **Details** | 3–10 bullets: figures verbatim, options considered *and why they were rejected*, constraints, unresolved questions |
-| Provenance | which provider distilled it, and a note that the transcript was not retained |
+| **Scope** | One line: what this covers **and what it does not** |
+| **Conclusion** | The answer, actionable. Commands, config and values *verbatim*, never described |
+| **Verify** | The concrete check that proves it worked. **This is what makes the note repeatable** |
+| **Decided** | What was committed to — only when it differs from the conclusion |
+| **Facts** | Durable specifics, figures verbatim. Measured numbers carry date and method inline |
+| **Rejected** | Every option considered, with the reason it lost. Prevents re-proposing |
+| **Failures** | What broke and its *actual* cause. Prevents re-debugging |
+| **Open** | What is unresolved. Often the most valuable line in the note |
+| **References** | Every URL, service or document named, with what it was used for |
 
-**The Details section replaces the transcript, so anything omitted there is
-gone.** That is the whole discipline: decide what matters while you still have
-the original, not later.
+### What to leave out
 
-What gets dropped: greetings, restatements, clarifying exchanges, dead ends that
-led nowhere, and the model's own hedging. A two-hour conversation may deserve
-four bullets. A three-line exchange that settled a decision may deserve a page.
+- Repeated questions and repeated answers
+- Greetings, sign-offs, pleasantries, and the model's own hedging
+- Restating the question back
+- Narration of reaching the conclusion — keep the destination, not the walk
+- Generic background that could simply be looked up
+- **Anything about the *conversation* rather than the *subject*.** Write "three
+  options exist: A, B, C", never "we discussed three options". The conversation
+  is scaffolding and comes down when the note is built.
+- Intermediate wrong answers — **unless someone would independently make the
+  same mistake.** Those belong in Failures. A typo does not; a misleading error
+  code does.
 
-Two cases keep the full transcript, both flagged `needs-review`:
+### Two things Verify buys you
 
-- content held back from the summariser because it matched a secret or
-  private-address pattern — it was never read, so there is nothing to distil
-- every provider failed — better a raw note than a lost one
+**It falsifies stale advice.** The first real test of this schema produced a note
+recommending a "free, keyless, just curl it" data source. Running the generated
+check showed the service now returns an anti-bot challenge — the recommendation
+had silently stopped working. Without a Verify section that claim would have
+entered the vault as fact.
 
-Both are temporary states. Distil by hand, then delete the transcript.
+**It surfaces missing prerequisites.** The same note added a required HTTP header
+that the source conversation never mentioned. Testing confirmed the call returns
+403 without it. A conclusion that omits a prerequisite is not repeatable, and only
+a check reveals the omission.
 
-### Worked example
+### Edge cases
 
-A 6-turn conversation about market-data APIs, ~180 lines of transcript, became a
-33-line note:
+**No conclusion reached.** An exploratory conversation still earns a note, but it
+is mostly **Open**, tagged `needs-review`, and short. It must not dress wandering
+up as a finding.
 
-```markdown
-## Summary
-- Adopted a free stack: Stooq for prices, SEC EDGAR XBRL for fundamentals,
-  FRED for macro — no API keys, no rate limits, ~95% of the stated need.
-- Alpha Vantage rejected: 25 requests/day is too tight for a daily refresh
-  of a few dozen tickers. Rejected on rate limits, not data quality.
-- EODHD at $19.99/mo is the paid fallback if global coverage is needed.
+**A conclusion spanning several conversations.** Update the *existing* note rather
+than adding a second. Bump `updated:`. If the new position reverses the old, mark
+the superseded text `> superseded by …` and keep it — per §7, the history of a
+wrong belief is often the useful part.
 
-## Details
-- Requirement narrowed to daily closes and dividends only — that is what
-  made the free stack viable.
-- Prices compared: Marketstack ~$9.99, EODHD ~$19.99, FMP ~$22, Finnhub $49–80.
-- EODHD caveat: fundamentals sit behind a higher tier, not the base plan.
-- Trigger for revisiting: needing non-US coverage.
-```
-
-Note what survived: every figure, the rejected option *with its reason*, and the
-condition that would reverse the decision. Note what did not: the questions, the
-narrowing, and the model's caveats. Someone reading this in a year can act on it
-or disagree with it, which is the test in §3.
+**Held back or no summary.** If content matched a secret pattern it was never sent
+anywhere, so there is nothing to distil: the full transcript is kept and tagged
+`needs-review`. Same if every provider failed. Both are temporary states — distil
+by hand, then delete the transcript.
 
 ## 4. Note anatomy
 
