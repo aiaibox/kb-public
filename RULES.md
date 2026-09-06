@@ -396,6 +396,8 @@ Inline code is exempt, so documentation can write `[[slug]]` as an example.
   in a new note.
 - **Supersede, do not delete:** mark stale content `> superseded by [[slug]]` and
   leave it. The history of a wrong belief is often the useful part.
+  **This applies to notes only.** Scripts, docs, templates and config are tools,
+  not records — when one is redundant, delete it. See `WORKING-RULES.md` §7.
 - **`inbox/` is the only unstructured folder.** Triage weekly. An item older than
   30 days is either filed or deleted — never left to rot.
 - **Volatile notes** whose observation date is over a year old are reverified or

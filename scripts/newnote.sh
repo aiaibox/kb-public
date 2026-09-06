@@ -4,7 +4,7 @@
 #   scripts/newnote.sh <path/slug> "<title>" [template]
 #
 # <path/slug> is relative to the repo root and takes no .md suffix:
-#   scripts/newnote.sh infra/hosts/minisforum-285h "MINISFORUM M1 Pro 285H" host
+#   scripts/newnote.sh living/turtle-heater-setpoint "Turtle tank heater setpoint" note
 #
 # The repo name is taken from the directory containing scripts/, so this file
 # is identical in every repo. Never hand-write an id; always come through here.

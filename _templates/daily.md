@@ -2,7 +2,7 @@
 id: {{id}}
 title: "{{title}}"
 repo: {{repo}}
-tags: [daily]
+tags: [note]
 created: {{created}}
 updated: {{updated}}
 ---
