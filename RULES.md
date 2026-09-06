@@ -232,14 +232,34 @@ A title is the filename slug and the primary retrieval handle. Name the
 - Good: `Switching from flake8 to Ruff on a 40k-line codebase`
 - Bad: `Linting tools comparison`
 
-### Size
+### Size — one note, one question
 
-Past **~200 lines** a note is usually two notes. Split by *question answered*,
-not by topic size. A note that answers three unrelated questions is three notes
-that will each be found more easily alone.
+**Split a note when its sections are independent subjects. Do not split it when
+they are steps in one sequence, however many there are.**
 
-Exception: append-only logs (`daily/`, `invest/journal/`) grow without limit by
-design and are never split.
+Line count is not the measure. A runbook with fifteen numbered steps is one
+question — *how do I do this?* — and splitting it mid-procedure makes it worse,
+because the reader would follow steps across two files. A design document with
+nine unrelated sections is nine questions wearing one filename, and it should
+split however short it is.
+
+The test: **could you give one section a specific title and would anyone search
+for it on its own?** If yes, it is a note. If it only makes sense in sequence
+with its neighbours, it is a section.
+
+**Technical ceiling: roughly 600 lines.** Past that a note exceeds the embedding
+model's 8192-token window and gets silently truncated by semantic search, so the
+tail becomes unfindable. This is a real limit with a real cause — not a style
+preference — and it is generous: the largest note in this vault is 389 lines
+(~4,800 tokens, 59% of the window).
+
+> That ceiling disappears if `semantic.py` embeds **per heading** rather than per
+> note, which is the better design anyway. Treat 600 as a property of the current
+> indexing approach, not of the vault.
+
+Append-only logs (`daily/`, `invest/journal/`) grow without limit by design.
+They need no exemption from the rule above: a continuous dated record *is* one
+question.
 
 ### Creating notes
 
