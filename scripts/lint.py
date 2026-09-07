@@ -79,7 +79,9 @@ ALLOW_MARKER = "lint:allow"
 
 SECRET_PATTERNS = [
     ("AWS access key id", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
-    ("AWS session/secret key", re.compile(r"(?i)\baws_(?:secret|session)\w*\s*[:=]\s*\S{16,}")),
+    # Separator optional: `aws configure set aws_secret_access_key 'KEY'` is the
+    # CLI form and carried a real key past the [:=]-only version on 2026-09-06.
+    ("AWS session/secret key", re.compile(r"(?i)\baws_(?:secret|session)\w*\s*[:=]?\s*['\"]?[A-Za-z0-9/+=]{16,}")),
     ("OpenAI-style API key", re.compile(r"\bsk-[A-Za-z0-9_\-]{20,}")),
     ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b")),
     ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b")),
