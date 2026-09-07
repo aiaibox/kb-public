@@ -27,6 +27,7 @@ volatile
 needs-review
 superseded
 promote-to-public
+project
 
 # Domain
 infra
