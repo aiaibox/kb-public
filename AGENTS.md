@@ -24,7 +24,7 @@ Consequence: nothing arrives here by default. Material is *promoted* from
 - Credentials of any kind, including examples that look real
 - Anything copied from another repo without sanitising first
 
-`scripts/lint-local.py` — this repo's own rule, run as part of base lint — blocks
+`scripts/lint.py` here adds this repo's own rule on top of base's — it blocks
 private IPs and `.internal`/`.local`/`.lan` hostnames **in this repo only**. That is a backstop for the cases a regex can catch, not a
 substitute for reading what you are about to publish.
 
@@ -53,4 +53,4 @@ Your working directory IS the repo root. Never prefix paths with `kb/`, `public/
 or the project name.
 
 ## Before finishing
-`python3 ../base/scripts/lint.py` — one copy, in `kb-base`; the repo is where you run it
+`python3 scripts/lint.py` — this repo's rules on top of `kb-base`'s
