@@ -4,13 +4,13 @@ title: "Bruno multi-request workflows: 4 script patterns"
 repo: public
 tags: [qa, reference, runbook, import]
 created: 2026-09-06
-updated: 2026-09-06
-source: chatgpt-export-2026-09-05
+updated: 2026-09-07
+source: claude-export-2026-09-06
 ---
 
 # Bruno multi-request workflows: 4 script patterns
 
-**Source:** ChatGPT — https://claude.ai/chat/4ac041f2-cdf3-4876-be7d-06a239cf7681
+**Source:** Claude — https://claude.ai/chat/4ac041f2-cdf3-4876-be7d-06a239cf7681
 **Exported:** 2026-09-06T05:33:24.783Z
 **Turns:** 2
 
@@ -51,4 +51,4 @@ In a Runner run, make a post-response script call bru.runner.setNextRequest() on
 
 ---
 
-*Distilled from a 2-turn ChatGPT conversation by glm-5.3-flash. The transcript was not retained; the source URL above is the only route back to it.*
+*Distilled from a 2-turn Claude conversation by glm-5.3-flash. The transcript was not retained; the source URL above is the only route back to it.*

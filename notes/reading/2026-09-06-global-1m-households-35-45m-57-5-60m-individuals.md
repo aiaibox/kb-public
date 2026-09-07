@@ -4,13 +4,13 @@ title: "Global $1M+ households: ~35-45M; ~57.5-60M individuals"
 repo: public
 tags: [reference, finance, volatile, import]
 created: 2026-09-06
-updated: 2026-09-06
-source: chatgpt-export-2026-09-05
+updated: 2026-09-07
+source: gemini-export-2026-09-06
 ---
 
 # Global $1M+ households: ~35-45M; ~57.5-60M individuals
 
-**Source:** ChatGPT — https://gemini.google.com/app/4fb616879b9bb356
+**Source:** Gemini — https://gemini.google.com/app/4fb616879b9bb356
 **Exported:** 2026-09-06T09:48:28.102Z
 **Turns:** 2
 
@@ -58,4 +58,4 @@ Cross-check the top-4 ordering (US, China, Japan, Germany) against the latest UB
 
 ---
 
-*Distilled from a 2-turn ChatGPT conversation by glm-5.3-flash. The transcript was not retained; the source URL above is the only route back to it.*
+*Distilled from a 2-turn Gemini conversation by glm-5.3-flash (source label corrected 2026-09-07: the watcher stamped every Gemini export as ChatGPT). The transcript was not retained; the source URL above is the only route back to it.*
