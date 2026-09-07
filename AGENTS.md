@@ -1,10 +1,10 @@
 # kb-public
 
-**Read `RULES.md` and `WORKING-RULES.md` first.**
+**Read `../base/RULES.md` and `../base/WORKING-RULES.md` first.**
 
-- `RULES.md` — what a note must contain, which repo it belongs in, the four
+- `../base/RULES.md` — what a note must contain, which repo it belongs in, the four
   detail tiers, frontmatter, tags and links. Shared across all four repos.
-- `WORKING-RULES.md` — how to behave while working: command output, change
+- `../base/WORKING-RULES.md` — how to behave while working: command output, change
   summaries, exact CLI, naming the machine, time estimates.
 
 This file holds only what is specific to `public`.
@@ -24,8 +24,8 @@ Consequence: nothing arrives here by default. Material is *promoted* from
 - Credentials of any kind, including examples that look real
 - Anything copied from another repo without sanitising first
 
-Lint mechanically blocks private IPs and `.internal`/`.local`/`.lan` hostnames
-**in this repo only**. That is a backstop for the cases a regex can catch, not a
+`scripts/lint-local.py` — this repo's own rule, run as part of base lint — blocks
+private IPs and `.internal`/`.local`/`.lan` hostnames **in this repo only**. That is a backstop for the cases a regex can catch, not a
 substitute for reading what you are about to publish.
 
 ## Layout — 5 top-level, no inbox
@@ -53,4 +53,4 @@ Your working directory IS the repo root. Never prefix paths with `kb/`, `public/
 or the project name.
 
 ## Before finishing
-`python3 scripts/lint.py`
+`python3 ../base/scripts/lint.py` — one copy, in `kb-base`; the repo is where you run it
