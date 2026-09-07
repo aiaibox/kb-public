@@ -25,3 +25,7 @@
 
 # Watcher dedupe state — machine-local, not shared
 .watcher-state.json
+
+# Python bytecode — regenerated on every lint/review run, never shared
+__pycache__/
+*.py[cod]
